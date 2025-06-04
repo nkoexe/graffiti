@@ -1,4 +1,0 @@
-name = "graffiti"
-pages_build_output_dir = "./dist"
-compatibility_date = "2024-06-03"
-compatibility_flags = ["nodejs_compat"]

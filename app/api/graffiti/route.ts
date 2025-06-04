@@ -7,8 +7,6 @@ import {
   type GraffitiData
 } from '@/lib/r2-storage';
 
-export const runtime = 'edge';
-
 export async function GET() {
   try {
     const graffitiData = await loadGraffitiData();

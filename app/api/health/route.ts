@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { loadGraffitiData } from '@/lib/r2-storage';
 
-export const runtime = 'edge';
-
 export async function GET() {
   try {
     // Test R2 connectivity by trying to load data

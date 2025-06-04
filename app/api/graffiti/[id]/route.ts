@@ -6,8 +6,6 @@ import {
   type GraffitiData
 } from '@/lib/r2-storage';
 
-export const runtime = 'edge';
-
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
