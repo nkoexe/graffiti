@@ -55,7 +55,7 @@
   z-index: 1000;
   display: flex;
   align-items: center;
-  padding: 20px 30px;
+  padding: 20px 25px;
 }
 
 .searchContainer {
@@ -112,34 +112,20 @@
 @media (max-width: 768px) {
   .controlsContainer {
     width: 100%;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .searchContainer {
-    margin-right: 0;
-    width: 100%;
-    max-width: 300px;
+    justify-content: space-between;
   }
 
   .searchBar {
-    width: 100%;
-    min-width: unset;
+    min-width: 100px;
   }
 
   .addButton {
-    position: fixed;
-    bottom: 40px;
-    right: 25px;
-    z-index: 1001;
-    border-radius: 50px;
-    padding: 15px 20px;
-    font-size: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    height: 42px;
+    justify-content: center;
   }
 
-  .plusIcon {
-    font-size: 20px;
+  .addButtonText {
+    display: none;
   }
 }
 

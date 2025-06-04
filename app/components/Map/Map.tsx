@@ -89,7 +89,7 @@ const Map = (props: MapProps) => {
         </div>
         <button onClick={onAddClick} className={styles.addButton}>
           <FaPlus className={styles.plusIcon} />
-          Add New
+          <span className={styles.addButtonText}>Add New</span>
         </button>
       </div>
       <MapContainer
