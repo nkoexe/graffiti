@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# ide
+.vscode/
+.idea/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+
+# Cloudflare
+.wrangler/
+.open-next/
+
+# debug
+npm-debug.log*
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
