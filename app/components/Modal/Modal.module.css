@@ -74,11 +74,9 @@
 
 .content {
   margin-top: 20px;
-  padding-bottom: 20px;
+  padding-bottom: 10px;
   overflow-y: auto;
-  max-height: calc(100% - 60px);
   -webkit-overflow-scrolling: touch;
-  /* For smoother scrolling on iOS */
 }
 
 .title {

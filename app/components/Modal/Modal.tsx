@@ -66,14 +66,19 @@ const Modal = ({ open, onClose, children, className = '' }: ModalProps) => {
   // Handle open state
   useEffect(() => {
     if (open) {
-      setIsVisible(true);
+      // setIsVisible(true);
       setIsClosing(false);
-      // Apply the open class after a small delay to trigger the transition
-      setTimeout(() => {
-        setOffset(0);
-        setDragging(false);
-        setDragStart(null);
-      }, 10);
+
+      setOffset(0);
+      setDragging(false);
+      setDragStart(null);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+
+          setIsVisible(true);
+        }, 100);
+      });
     } else {
       setIsVisible(false);
       setIsFullscreen(false);
@@ -312,7 +317,7 @@ const Modal = ({ open, onClose, children, className = '' }: ModalProps) => {
     >
       <div
         className={`${styles.modal} 
-          ${open && !isClosing ? styles.open : ''} 
+          ${isVisible && !isClosing ? styles.open : ''} 
           ${isClosing ? styles.closing : ''} 
           ${isFullscreen ? styles.fullscreen : ''} 
           ${dragging ? styles.dragging : ''}`}
