@@ -18,7 +18,7 @@ const icon = L.icon({
 interface AddContentModalProps {
   open: boolean;
   onClose: () => void;
-  onGraffitiUpload?: () => void;
+  onGraffitiUpload?: (graffiti: any) => void;
   initialPosition?: [number, number];
 }
 
@@ -133,6 +133,8 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
         throw new Error('Failed to upload graffiti');
       }
 
+      const result = await response.json();
+
       // Reset form
       setDescription('');
       setAuthor('');
@@ -142,9 +144,9 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
         setPosition(userLocation);
       }
 
-      // Trigger data refresh in parent component
+      // Trigger data refresh in parent component with new graffiti data
       if (onGraffitiUpload) {
-        onGraffitiUpload();
+        onGraffitiUpload(result.graffiti);
       }
 
       onClose();

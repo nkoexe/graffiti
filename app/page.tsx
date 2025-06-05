@@ -3,11 +3,12 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect } from "react";
 import 'reactjs-popup/dist/index.css';
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 
 import Modal from "./components/Modal/Modal";
 import styles from "./page.module.css";
 import modalStyles from "./components/Modal/Modal.module.css";
+import { useGraffiti } from "./contexts/GraffitiContext";
 
 interface GraffitiData {
   id: number;
@@ -19,11 +20,10 @@ interface GraffitiData {
 }
 
 export default function Home() {
+  const { graffitiData, refreshData, removeGraffiti, addGraffiti } = useGraffiti();
   const [openModal, setOpenModal] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedElement, setSelectedElement] = useState<GraffitiData | null>(null);
-  const [graffitiData, setGraffitiData] = useState<GraffitiData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState<[number, number]>([46.6707291, 11.1591838]);
   const [locationStatus, setLocationStatus] = useState<'requesting' | 'granted' | 'denied' | 'unavailable' | 'timeout'>('requesting');
   const [longPressCoordinates, setLongPressCoordinates] = useState<[number, number] | null>(null);
@@ -70,25 +70,6 @@ export default function Home() {
       options
     );
   };
-
-  // Fetch graffiti data from API
-  const fetchGraffitiData = async () => {
-    try {
-      const response = await fetch('/api/graffiti');
-      if (response.ok) {
-        const data = await response.json();
-        setGraffitiData(data);
-      }
-    } catch (error) {
-      console.error('Error fetching graffiti data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchGraffitiData();
-  }, []);
 
   useEffect(() => {
     getUserLocation();
@@ -140,8 +121,8 @@ export default function Home() {
   };
 
   // Handle successful graffiti upload
-  const handleGraffitiUpload = () => {
-    fetchGraffitiData(); // Refresh the data
+  const handleGraffitiUpload = (newGraffiti: GraffitiData) => {
+    addGraffiti(newGraffiti); // Add to local state immediately
   };
 
   // Handle modal close
@@ -164,29 +145,13 @@ export default function Home() {
 
       setOpenModal(false);
       setSelectedElement(null);
-      fetchGraffitiData(); // Refresh data
+      removeGraffiti(id); // Update local state immediately
     } catch (error) {
       console.error('Error deleting graffiti:', error);
       alert('Failed to delete graffiti. Please try again.');
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          fontSize: '1.2rem',
-          fontWeight: 500,
-        }}>
-          Loading graffiti data...
-        </div>
-      </div>
-    );
-  }
   return (
     <div className={styles.page}>
       <div className={styles.map}>
