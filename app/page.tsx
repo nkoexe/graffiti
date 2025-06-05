@@ -89,7 +89,7 @@ export default function Home() {
           color: '#666',
           fontWeight: 500,
         }}>
-          <p>Keep looking for street art...</p>
+          <p>Looking for street art...</p>
         </div>
       ),
       ssr: false
