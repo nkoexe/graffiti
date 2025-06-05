@@ -86,9 +86,10 @@ export default function Home() {
           height: '100%',
           width: '100%',
           fontSize: '1.2rem',
+          color: '#666',
           fontWeight: 500,
         }}>
-          <p>Map is loading...</p>
+          <p>Keep looking for street art...</p>
         </div>
       ),
       ssr: false

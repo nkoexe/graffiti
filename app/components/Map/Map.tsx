@@ -104,6 +104,7 @@ const Map = (props: MapProps) => {
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          detectRetina={true}
         />
         {filteredData.map((element) => { // Use filteredData instead of data
           // Use last image in the array as marker icon

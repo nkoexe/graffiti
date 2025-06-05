@@ -170,8 +170,6 @@ const Modal = ({ open, onClose, children, className = '' }: ModalProps) => {
     const target = e.target as Element;
 
     handleDragStart(position.x, position.y, target);
-    e.preventDefault();
-    e.stopPropagation();
   };
 
   const handleReactDragMove = (e: React.TouchEvent | React.MouseEvent) => {
