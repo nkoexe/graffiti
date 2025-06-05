@@ -163,7 +163,10 @@ const Modal = ({ open, onClose, children, className = '' }: ModalProps) => {
   const handleReactDragStart = (e: React.TouchEvent | React.MouseEvent) => {
     const position = getEventPosition(e);
     const target = e.target as Element;
+
     handleDragStart(position.x, position.y, target);
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleReactDragMove = (e: React.TouchEvent | React.MouseEvent) => {
@@ -258,7 +261,7 @@ const Modal = ({ open, onClose, children, className = '' }: ModalProps) => {
 
       // Prevent default for vertical drag events when modal is not in fullscreen mode
       // or when pill is being dragged, or when at top and dragging down in fullscreen
-      if (isPillDrag || (isFullscreen && isAtTop && isDraggingDown) || (!isFullscreen && isVerticalDrag && !isDesktop)) {
+      if (isPillDrag || (isFullscreen && isAtTop && isDraggingDown) || (!isFullscreen && isVerticalDrag)) {
         e.preventDefault();
       }
     };
