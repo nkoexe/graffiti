@@ -225,12 +225,14 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
               <MapContainer
                 attributionControl={false}
                 center={position}
-                zoom={15}
+                zoom={17}
+                maxZoom={21}
                 style={{ height: "200px", width: "100%" }}
                 key={open.toString()}
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  maxZoom={21}
                 />
                 <LocationMarker position={position} setPosition={setPosition} />
               </MapContainer>

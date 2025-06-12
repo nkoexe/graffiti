@@ -154,6 +154,7 @@ const Map = (props: MapProps) => {
         center={center}
         zoom={zoom}
         zoomControl={false}
+        maxZoom={21}
         style={{ height: "100%", width: "100%" }}
         className={styles.map}
       >
@@ -163,8 +164,9 @@ const Map = (props: MapProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           detectRetina={true}
+          maxZoom={21}
         />
-        {filteredData.map((element) => { // Use filteredData instead of data
+        {filteredData.map((element) => {
           // Use last image in the array as marker icon
           const markerIcon = element.images[element.images.length - 1];
 
