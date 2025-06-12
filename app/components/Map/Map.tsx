@@ -60,33 +60,91 @@ const RightClickHandler = ({ onRightClick }: { onRightClick?: (coordinates: [num
 const Map = (props: MapProps) => {
   const { zoom = defaults.zoom, center = defaults.center, data, onMarkerClick, onAddClick, onRightClick } = props;
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Filter data based on search query
   const filteredData = data.filter(element => {
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
     return (
       element.author.toLowerCase().includes(query) ||
       element.description.toLowerCase().includes(query)
     );
   });
 
+  const suggestions = searchQuery.trim() ? filteredData : [];
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+    const value = event.target.value;
+    setSearchQuery(value);
+    setShowSuggestions(value.trim().length > 0);
+  };
+
+  const handleSuggestionClick = (element: any) => {
+    if (onMarkerClick) {
+      onMarkerClick(element);
+    }
+    setShowSuggestions(false);
+    setSearchQuery('');
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.trim().length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSearchBlur = () => {
+    // Delay hiding suggestions to allow for clicks
+    setTimeout(() => setShowSuggestions(false), 150);
   };
 
   return (
     <div className={styles.mapContainerWrapper}>
-      <div className={styles.controlsContainer}>
-        <div className={styles.searchContainer}>
-          <input
-            type="text"
-            placeholder="Search"
-            className={styles.searchBar}
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-          <FaSearch className={styles.searchIcon} />
-        </div>
+      <div className={styles.controlsContainer}>        <div className={styles.searchContainer}>
+        <input
+          type="text"
+          placeholder="Search"
+          className={styles.searchBar}
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onFocus={handleSearchFocus}
+          onBlur={handleSearchBlur}
+        />
+        <FaSearch className={styles.searchIcon} />
+        {showSuggestions && suggestions.length > 0 && (
+          <div className={styles.suggestionsContainer}>
+            {suggestions.map((suggestion) => (
+              <div
+                key={suggestion.id}
+                className={styles.suggestionItem}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleSuggestionClick(suggestion);
+                }}
+              >
+                <div className={styles.suggestionContent}>
+                  <div className={styles.suggestionAuthor}>
+                    {suggestion.author}
+                  </div>
+                  <div className={styles.suggestionDescription}>
+                    {suggestion.description.length > 50
+                      ? `${suggestion.description.substring(0, 50)}...`
+                      : suggestion.description
+                    }
+                  </div>
+                </div>
+                {suggestion.images.length > 0 && (
+                  <div className={styles.suggestionImage}>
+                    <img
+                      src={suggestion.images[suggestion.images.length - 1]}
+                      alt={`Graffiti by ${suggestion.author}`}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
         <button onClick={onAddClick} className={styles.addButton}>
           <FaPlus className={styles.plusIcon} />
           <span className={styles.addButtonText}>Add New</span>
