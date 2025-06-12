@@ -161,9 +161,9 @@ const Map = (props: MapProps) => {
         zoom={zoom}
         zoomControl={false}
         maxZoom={21}
-        style={{ height: "100%", width: "100%" }}
-        className={styles.map}
-      ><MapCenterUpdater center={center} />
+        className={styles.mapContainer}
+      >
+        <MapCenterUpdater center={center} />
         <RightClickHandler onRightClick={onRightClick} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
