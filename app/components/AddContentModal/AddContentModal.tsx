@@ -22,10 +22,14 @@ interface AddContentModalProps {
   initialPosition?: [number, number];
 }
 
-function LocationMarker({ position, setPosition }: { position: [number, number]; setPosition: (pos: [number, number]) => void }) {
+function LocationMarker({ position, setPosition }: {
+  position: [number, number];
+  setPosition: (pos: [number, number]) => void;
+}) {
   useMapEvents({
     click: (e) => {
-      setPosition([e.latlng.lat, e.latlng.lng]);
+      const newPosition: [number, number] = [e.latlng.lat, e.latlng.lng];
+      setPosition(newPosition);
     },
   });
 
@@ -39,9 +43,82 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); const [errors, setErrors] = useState<{
+    description?: string;
+    author?: string;
+    images?: string;
+  }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Validation constants
+  const MAX_DESCRIPTION_LENGTH = 500;
+  const MAX_AUTHOR_LENGTH = 100;
+  const MAX_IMAGES = 10;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+  // Validation functions
+  const validateDescription = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return 'Description is required';
+    }
+    if (value.length > MAX_DESCRIPTION_LENGTH) {
+      return `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`;
+    }
+    return undefined;
+  };
+
+  const validateAuthor = (value: string): string | undefined => {
+    if (value.length > MAX_AUTHOR_LENGTH) {
+      return `Author name must be less than ${MAX_AUTHOR_LENGTH} characters`;
+    }
+    return undefined;
+  };
+  const validateImages = (imageFiles: File[]): string | undefined => {
+    if (imageFiles.length === 0) {
+      return 'At least 1 image is required';
+    }
+    if (imageFiles.length > MAX_IMAGES) {
+      return `Maximum ${MAX_IMAGES} images allowed`;
+    }
+
+    for (const file of imageFiles) {
+      if (file.size > MAX_FILE_SIZE) {
+        return `Each image must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`;
+      }
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return 'Only JPEG, PNG, GIF, and WebP images are allowed';
+      }
+    }
+    return undefined;
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    const descriptionError = validateDescription(description);
+    if (descriptionError) newErrors.description = descriptionError;
+
+    const authorError = validateAuthor(author);
+    if (authorError) newErrors.author = authorError;
+
+    const imagesError = validateImages(images);
+    if (imagesError) newErrors.images = imagesError;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Clear specific error when field is modified
+  const clearError = (field: keyof typeof errors) => {
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
 
   // Auto-resize textarea
   const adjustTextareaHeight = () => {
@@ -57,13 +134,19 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
       adjustTextareaHeight();
     }
   }, [description, open]);
-
   // Update position when initialPosition changes
   useEffect(() => {
     if (initialPosition) {
       setPosition(initialPosition);
     }
   }, [initialPosition]);
+
+  // Clear errors when modal opens/closes
+  useEffect(() => {
+    if (open) {
+      setErrors({});
+    }
+  }, [open]);
   // Get user's location
   useEffect(() => {
     // Only try to get location if modal is open and no initial position is provided
@@ -102,15 +185,43 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
       }
     );
   }, [open, initialPosition]);
-
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDescription(e.target.value);
+    const value = e.target.value;
+    setDescription(value);
     adjustTextareaHeight();
+    clearError('description');
+
+    // Real-time validation for description length
+    if (value.length > MAX_DESCRIPTION_LENGTH) {
+      setErrors(prev => ({ ...prev, description: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters` }));
+    }
   };
 
+  const handleAuthorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAuthor(value);
+    clearError('author');
+
+    // Real-time validation for author length
+    if (value.length > MAX_AUTHOR_LENGTH) {
+      setErrors(prev => ({ ...prev, author: `Author name must be less than ${MAX_AUTHOR_LENGTH} characters` }));
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
+
+    // Validate form
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const formData = new FormData();
@@ -133,13 +244,12 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
         throw new Error('Failed to upload graffiti');
       }
 
-      const result = await response.json();
-
-      // Reset form
+      const result = await response.json();      // Reset form
       setDescription('');
       setAuthor('');
       setImages([]);
       setImagePreviewUrls([]);
+      setErrors({});
       if (userLocation) {
         setPosition(userLocation);
       }
@@ -157,18 +267,28 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
       setIsSubmitting(false);
     }
   };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      setImages([...images, ...filesArray]);
+      const newImages = [...images, ...filesArray];
+
+      // Validate new image selection
+      const imagesError = validateImages(newImages);
+      if (imagesError) {
+        setErrors(prev => ({ ...prev, images: imagesError }));
+        return;
+      }
+
+      // Clear images error if validation passes
+      clearError('images');
+
+      setImages(newImages);
 
       // Create preview URLs
       const newImagePreviews = filesArray.map(file => URL.createObjectURL(file));
       setImagePreviewUrls([...imagePreviewUrls, ...newImagePreviews]);
     }
   };
-
   const removeImage = (index: number) => {
     const newImages = [...images];
     const newImagePreviewUrls = [...imagePreviewUrls];
@@ -181,6 +301,9 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
 
     setImages(newImages);
     setImagePreviewUrls(newImagePreviewUrls);
+
+    // Clear images error when removing images
+    clearError('images');
   };
 
   const triggerFileInput = () => {
@@ -192,19 +315,18 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
   return (
     <Modal open={open} onClose={onClose} className={styles.addContentModal}>
       <div className={styles.modalContent}>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <input
-              type="text"
-              id="author"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Author: Unknown"
-              className={styles.formInput}
-            />
-          </div>
-          <div className={styles.formSeparator}></div>
-          <div className={styles.formGroup}>
+        <form onSubmit={handleSubmit} className={styles.form}>          <div className={styles.formGroup}>
+          <input
+            type="text"
+            id="author"
+            value={author}
+            onChange={handleAuthorChange}
+            placeholder="Author: Unknown"
+            className={`${styles.formInput} ${errors.author ? styles.inputError : ''}`}
+          />
+          {errors.author && <div className={styles.errorMessage}>{errors.author}</div>}
+        </div>
+          <div className={styles.formSeparator}></div>          <div className={styles.formGroup}>
             <textarea
               id="description"
               value={description}
@@ -212,13 +334,16 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
               required
               placeholder="Does it have a name? What is it? How to reach it? What's interesting about it?"
               rows={3}
-              className={styles.formInput}
+              className={`${styles.formInput} ${errors.description ? styles.inputError : ''}`}
               ref={textareaRef}
               style={{ overflow: 'hidden', minHeight: '80px', resize: 'none' }}
             />
+            {errors.description && <div className={styles.errorMessage}>{errors.description}</div>}
+            <div className={styles.characterCount}>
+              {description.length}/{MAX_DESCRIPTION_LENGTH}
+            </div>
           </div>
-          <div className={styles.formSeparator}></div>
-          <div className={styles.formGroup}>
+          <div className={styles.formSeparator}></div>          <div className={styles.formGroup}>
             <label>Location</label>
             <div className={styles.mapContainer}>
               {/* Using key={open} to force remount when modal opens */}
@@ -235,11 +360,8 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
                   maxZoom={21}
                 />
                 <LocationMarker position={position} setPosition={setPosition} />
-              </MapContainer>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
+              </MapContainer>            </div>
+          </div><div className={styles.formGroup}>
             <label>Images</label>
             <div className={styles.imageUpload}>
               <input
@@ -254,9 +376,14 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
                 type="button"
                 onClick={triggerFileInput}
                 className={styles.uploadButton}
+                disabled={images.length >= MAX_IMAGES}
               >
                 <span className={styles.plusIcon}>+</span>
               </button>
+            </div>
+            {errors.images && <div className={styles.errorMessage}>{errors.images}</div>}
+            <div className={styles.imageCount}>
+              {images.length}/{MAX_IMAGES} images
             </div>
 
             {imagePreviewUrls.length > 0 && (
@@ -273,14 +400,23 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
                     </button>
                   </div>
                 ))}
-              </div>
-            )}
-          </div>          <button
+              </div>)}
+          </div>
+
+          {(images.length === 0 || !description.trim()) && (
+            <div className={styles.submitRequirements}>
+              To submit a new graffiti, you still need:
+              {!description.trim() && <div>• A description</div>}
+              {images.length === 0 && <div>• At least 1 image</div>}
+            </div>
+          )}
+
+          <button
             type="submit"
             className={styles.submitButton}
-            disabled={isSubmitting}
+            disabled={isSubmitting || Object.keys(errors).length > 0 || !description.trim() || images.length === 0}
           >
-            {isSubmitting ? 'Uploading...' : 'Submit'}
+            {isSubmitting ? 'Uploading your images! Please give me a sec...' : 'Submit it!'}
           </button>
         </form>
       </div>

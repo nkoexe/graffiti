@@ -21,13 +21,13 @@
   font-size: 22px;
   font-family: inherit;
   background: transparent;
-  transition: border-color 0.3s ease;
-  color: #333;
+  transition: border-color 0.3s ease, color 0.3s ease;
+  color: var(--text-primary);
   width: 100%;
 }
 
 .formInput::placeholder {
-  color: #aaa;
+  color: var(--text-secondary);
   font-weight: 300;
   font-family: inherit;
 }
@@ -38,9 +38,10 @@
 
 .formSeparator {
   height: 1px;
-  background-color: #e0e0e0;
+  background-color: var(--border);
   width: 50%;
   margin-bottom: 30px;
+  transition: background-color 0.3s ease;
 }
 
 .formGroup textarea {
@@ -52,6 +53,12 @@
   background: transparent;
   width: 100%;
   font-family: inherit;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.formGroup textarea::placeholder {
+  color: var(--text-secondary);
 }
 
 .formGroup textarea:focus {
@@ -68,10 +75,11 @@
 }
 
 .mapContainer {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--button-shadow);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .imageUpload {
@@ -89,28 +97,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f7f9fc;
-  color: #3498db;
-  border: 2px dashed #c3cfe2;
+  background-color: var(--surface-secondary);
+  color: var(--accent-primary);
+  border: 2px dashed var(--border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   width: 100%;
   padding: 25px 0;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--button-shadow);
 }
 
 .uploadButton:hover {
-  background-color: #eef2f7;
-  border-color: #8da9c4;
+  background-color: var(--surface);
+  border-color: var(--accent-primary);
   transform: translateY(-2px);
 }
 
 .plusIcon {
   font-size: 42px;
   line-height: 1;
-  color: #3498db;
+  color: var(--accent-primary);
   font-weight: 300;
 }
 
@@ -166,22 +174,88 @@
 
 .submitButton {
   margin-top: 20px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 6px;
+  padding: 12px 24px;
+  background-color: #3498db;
+  color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 30px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
-  background-color: #3498db;
-  color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
 }
 
-.submitButton:hover {
-  background-color: #2980b9;
+.submitButton:hover:not(:disabled) {
+  background-color: var(--accent-secondary);
+  box-shadow: var(--button-shadow-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.submitButton:disabled {
+  background-color: #f5f5f5;
+  color: #bbb;
+  cursor: not-allowed;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-color: #ddd;
+}
+
+.submitButton:disabled:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.submitRequirements {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 15px 0;
+  color: #6c757d;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.submitRequirements div {
+  margin: 2px 0;
+}
+
+/* Validation styles */
+.inputError {
+  border-bottom: 2px solid #e74c3c !important;
+}
+
+.errorMessage {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.characterCount {
+  color: #666;
+  font-size: 12px;
+  text-align: right;
+  margin-top: 5px;
+}
+
+.imageCount {
+  color: #666;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.uploadButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+  background-color: var(--accent-primary);
+  color: white;
+  box-shadow: var(--button-shadow);
 }
 
 @media (max-width: 768px) {
