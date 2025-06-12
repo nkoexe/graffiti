@@ -23,10 +23,10 @@ export default function Home() {
   const { graffitiData, refreshData, removeGraffiti, addGraffiti } = useGraffiti();
   const [openModal, setOpenModal] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
-  const [selectedElement, setSelectedElement] = useState<GraffitiData | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([46.6707291, 11.1591838]);
+  const [selectedElement, setSelectedElement] = useState<GraffitiData | null>(null);  const [mapCenter, setMapCenter] = useState<[number, number]>([46.6707291, 11.1591838]);
   const [locationStatus, setLocationStatus] = useState<'requesting' | 'granted' | 'denied' | 'unavailable' | 'timeout'>('requesting');
   const [longPressCoordinates, setLongPressCoordinates] = useState<[number, number] | null>(null);
+  const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
 
   // Get user's current location
   const getUserLocation = () => {
@@ -41,13 +41,13 @@ export default function Home() {
       enableHighAccuracy: true,
       timeout: 10000, // 10 second timeout
       maximumAge: 300000 // 5 minutes cache
-    };
-
-    navigator.geolocation.getCurrentPosition(
+    };    navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         console.log('User location obtained:', latitude, longitude);
-        setMapCenter([latitude, longitude]);
+        const userPos: [number, number] = [latitude, longitude];
+        setMapCenter(userPos);
+        setUserPosition(userPos);
         setLocationStatus('granted');
       },
       (error) => {
@@ -71,9 +71,71 @@ export default function Home() {
     );
   };
 
+  // Watch user's position for real-time updates
+  const watchUserPosition = () => {
+    if (!navigator.geolocation) {
+      return;
+    }
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 60000 // 1 minute cache for position updates
+    };
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const userPos: [number, number] = [latitude, longitude];
+        setUserPosition(userPos);
+        console.log('User position updated:', latitude, longitude);
+      },
+      (error) => {
+        console.log('Error watching user position:', error.message);
+      },
+      options
+    );
+
+    return watchId;
+  };
   useEffect(() => {
     getUserLocation();
-  }, []);
+    
+    // Start watching position after component mounts
+    let watchId: number | undefined;
+    
+    const startWatching = () => {
+      if (navigator.geolocation && locationStatus === 'granted') {
+        watchId = watchUserPosition();
+      }
+    };
+
+    // Add a small delay to ensure location permission is granted
+    const timer = setTimeout(startWatching, 1000);
+
+    // Cleanup function to clear the watch and timer
+    return () => {
+      clearTimeout(timer);
+      if (watchId !== undefined) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, []); // Only run once on mount
+
+  // Separate effect to handle starting position watching when permission is granted
+  useEffect(() => {
+    let watchId: number | undefined;
+    
+    if (locationStatus === 'granted') {
+      watchId = watchUserPosition();
+    }
+
+    return () => {
+      if (watchId !== undefined) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [locationStatus]);
 
   const Map = useMemo(() => dynamic(
     () => import('./components/Map/Map'),
@@ -155,13 +217,13 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.map}>
-        <Map
+      <div className={styles.map}>        <Map
           data={graffitiData}
           onMarkerClick={handleMarkerClick}
           onAddClick={handleAddButtonClick}
           onRightClick={handleMapLongPress}
           center={mapCenter}
+          userPosition={userPosition}
         />
       </div>{selectedElement && (
         <Modal open={openModal} onClose={() => setOpenModal(false)}>

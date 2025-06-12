@@ -6,6 +6,8 @@ import styles from './Map.module.css';
 import { useState, useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import { FaSearch, FaPlus } from 'react-icons/fa';
+import DarkModeToggle from '../DarkModeToggle/DarkModeToggle';
+import { useTheme } from '../../contexts/ThemeContext';
 
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
@@ -24,6 +26,7 @@ interface MapProps {
   onMarkerClick?: (element: any) => void,
   onAddClick?: () => void;
   onRightClick?: (coordinates: [number, number]) => void;
+  userPosition?: [number, number] | null;
 }
 
 const defaults = {
@@ -58,10 +61,10 @@ const RightClickHandler = ({ onRightClick }: { onRightClick?: (coordinates: [num
 };
 
 const Map = (props: MapProps) => {
-  const { zoom = defaults.zoom, center = defaults.center, data, onMarkerClick, onAddClick, onRightClick } = props;
+  const { zoom = defaults.zoom, center = defaults.center, data, onMarkerClick, onAddClick, onRightClick, userPosition } = props;
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-
+  const { theme } = useTheme();
   const filteredData = data.filter(element => {
     const query = searchQuery.toLowerCase().trim();
     return (
@@ -70,7 +73,8 @@ const Map = (props: MapProps) => {
     );
   });
 
-  const suggestions = searchQuery.trim() ? filteredData : [];
+  // Get suggestions (first 5 filtered results)
+  const suggestions = searchQuery.trim() ? filteredData.slice(0, 5) : [];
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -99,56 +103,58 @@ const Map = (props: MapProps) => {
 
   return (
     <div className={styles.mapContainerWrapper}>
-      <div className={styles.controlsContainer}>        <div className={styles.searchContainer}>
-        <input
-          type="text"
-          placeholder="Search"
-          className={styles.searchBar}
-          value={searchQuery}
-          onChange={handleSearchChange}
-          onFocus={handleSearchFocus}
-          onBlur={handleSearchBlur}
-        />
-        <FaSearch className={styles.searchIcon} />
-        {showSuggestions && suggestions.length > 0 && (
-          <div className={styles.suggestionsContainer}>
-            {suggestions.map((suggestion) => (
-              <div
-                key={suggestion.id}
-                className={styles.suggestionItem}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleSuggestionClick(suggestion);
-                }}
-              >
-                <div className={styles.suggestionContent}>
-                  <div className={styles.suggestionAuthor}>
-                    {suggestion.author}
+      <div className={styles.controlsContainer}>
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Search"
+            className={styles.searchBar}
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
+          />
+          <FaSearch className={styles.searchIcon} />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className={styles.suggestionsContainer}>
+              {suggestions.map((suggestion) => (
+                <div
+                  key={suggestion.id}
+                  className={styles.suggestionItem}
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // Prevent blur from firing before click
+                    handleSuggestionClick(suggestion);
+                  }}
+                >
+                  <div className={styles.suggestionContent}>
+                    <div className={styles.suggestionAuthor}>
+                      {suggestion.author}
+                    </div>
+                    <div className={styles.suggestionDescription}>
+                      {suggestion.description.length > 50
+                        ? `${suggestion.description.substring(0, 50)}...`
+                        : suggestion.description
+                      }
+                    </div>
                   </div>
-                  <div className={styles.suggestionDescription}>
-                    {suggestion.description.length > 50
-                      ? `${suggestion.description.substring(0, 50)}...`
-                      : suggestion.description
-                    }
-                  </div>
+                  {suggestion.images.length > 0 && (
+                    <div className={styles.suggestionImage}>
+                      <img
+                        src={suggestion.images[suggestion.images.length - 1]}
+                        alt={`Graffiti by ${suggestion.author}`}
+                      />
+                    </div>
+                  )}
                 </div>
-                {suggestion.images.length > 0 && (
-                  <div className={styles.suggestionImage}>
-                    <img
-                      src={suggestion.images[suggestion.images.length - 1]}
-                      alt={`Graffiti by ${suggestion.author}`}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
         <button onClick={onAddClick} className={styles.addButton}>
           <FaPlus className={styles.plusIcon} />
           <span className={styles.addButtonText}>Add New</span>
         </button>
+        <DarkModeToggle />
       </div>
       <MapContainer
         center={center}
@@ -157,12 +163,14 @@ const Map = (props: MapProps) => {
         maxZoom={21}
         style={{ height: "100%", width: "100%" }}
         className={styles.map}
-      >
-        <MapCenterUpdater center={center} />
+      ><MapCenterUpdater center={center} />
         <RightClickHandler onRightClick={onRightClick} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={theme === 'dark'
+            ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          }
           detectRetina={true}
           maxZoom={21}
         />
@@ -212,6 +220,19 @@ const Map = (props: MapProps) => {
             </Marker>
           )
         }
+        )}
+
+        {/* User position indicator */}
+        {userPosition && (
+          <Marker
+            position={userPosition}
+            icon={new DivIcon({
+              className: '',
+              iconSize: [15, 15],
+              iconAnchor: [7.5, 7.5],
+              html: `<div class="${styles.userPositionMarker}"></div>`
+            })}
+          />
         )}
       </MapContainer >
     </div>

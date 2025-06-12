@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { GraffitiProvider } from "./contexts/GraffitiContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -17,13 +18,14 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  return (
+}>) {  return (
     <html lang="en">
       <body className={`${outfit.className}`}>
-        <GraffitiProvider>
-          {children}
-        </GraffitiProvider>
+        <ThemeProvider>
+          <GraffitiProvider>
+            {children}
+          </GraffitiProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

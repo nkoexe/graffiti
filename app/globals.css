@@ -1,12 +1,121 @@
 :root {
+  /* Light Mode Colors */
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --surface-secondary: #f8f9fa;
+  --border: #e1e4e8;
+  --border-light: #f0f0f0;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-muted: #999;
+
+  /* Button Colors */
+  --button-bg: #ffffff;
+  --button-bg-hover: #f8f8f8;
+  --button-text: #333;
+  --button-border: #ccc;
+  --button-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --button-shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.3);
+  --button-shadow-active: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+  /* Modal Colors */
+  --modal-bg: #ffffff;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --modal-border: #e1e4e8;
+
+  /* Map Marker Colors */
+  --marker-bg: #ffffff;
+  --marker-border: #ccc;
+  --marker-shadow: rgba(0, 0, 0, 0.3);
+
+  /* Focus and accent colors */
+  --focus-color: #007aff;
+  --accent-primary: #007aff;
+  --accent-secondary: #1687ff;
+  --accent-text: #ffffff;
+
+  /* Status Colors */
+  --success: #28a745;
+  --warning: #ffc107;
+  --error: #dc3545;
 }
 
+/* Dark Mode Colors */
+[data-theme="dark"] {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --surface: #2d2d2d;
+  --surface-secondary: #3a3a3a;
+  --border: #404040;
+  --border-light: #555;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #888;
+
+  --button-bg: #2d2d2d;
+  --button-bg-hover: #3a3a3a;
+  --button-text: #ffffff;
+  --button-border: #555;
+  --button-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --button-shadow-hover: 0 4px 15px rgba(0, 0, 0, 0.6);
+  --button-shadow-active: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  --modal-bg: #2d2d2d;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --modal-border: #555;
+
+  --marker-bg: #2d2d2d;
+  --marker-border: #555;
+  --marker-shadow: rgba(0, 0, 0, 0.6);
+
+  --focus-color: #0a84ff;
+  --accent-primary: #0a84ff;
+  --accent-secondary: #1687ff;
+  --accent-text: #ffffff;
+
+  --success: #30d158;
+  --warning: #ffd60a;
+  --error: #ff453a;
+}
+
+/* System preference fallback */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme]) {
+    --background: #1a1a1a;
+    --foreground: #ffffff;
+    --surface: #2d2d2d;
+    --surface-secondary: #3a3a3a;
+    --border: #404040;
+    --border-light: #555;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #999;
+
+    --button-bg: #2d2d2d;
+    --button-bg-hover: #3a3a3a;
+    --button-text: #ffffff;
+    --button-border: #555;
+    --button-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --button-shadow-hover: 0 4px 15px rgba(0, 0, 0, 0.6);
+    --button-shadow-active: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    --modal-bg: #2d2d2d;
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --modal-border: #555;
+
+    --marker-bg: #2d2d2d;
+    --marker-border: #555;
+    --marker-shadow: rgba(0, 0, 0, 0.6);
+
+    --focus-color: #0a84ff;
+    --accent-primary: #0a84ff;
+    --accent-secondary: #64d2ff;
+    --accent-text: #ffffff;
+
+    --success: #30d158;
+    --warning: #ffd60a;
+    --error: #ff453a;
   }
 }
 
@@ -15,6 +124,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
@@ -36,6 +146,20 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Smooth transitions for theme changes */
+*,
+*::before,
+*::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Disable transitions during theme switch to prevent flickering */
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: none !important;
 }
 
 @media (prefers-color-scheme: dark) {
