@@ -10,15 +10,19 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Graphiti",
+  title: "Graffiti",
   description: "Community-driven Graffiti Database",
+  icons: {
+    icon: '/icon.png',
+  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {  return (
+}>) {
+  return (
     <html lang="en">
       <body className={`${outfit.className}`}>
         <ThemeProvider>
