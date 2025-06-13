@@ -21,7 +21,7 @@
 
   /* Modal Colors */
   --modal-bg: #ffffff;
-  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --modal-overlay: rgba(0, 0, 0, 0.3);
   --modal-border: #e1e4e8;
 
   /* Map Marker Colors */
@@ -62,7 +62,7 @@
   --button-shadow-active: 0 1px 3px rgba(0, 0, 0, 0.3);
 
   --modal-bg: #2d2d2d;
-  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --modal-overlay: rgba(0, 0, 0, 0.5);
   --modal-border: #555;
 
   --marker-bg: #2d2d2d;
@@ -101,7 +101,7 @@
     --button-shadow-active: 0 1px 3px rgba(0, 0, 0, 0.3);
 
     --modal-bg: #2d2d2d;
-    --modal-overlay: rgba(0, 0, 0, 0.7);
+    --modal-overlay: rgba(0, 0, 0, 0.5);
     --modal-border: #555;
 
     --marker-bg: #2d2d2d;

@@ -252,19 +252,14 @@ const Modal = ({ open, onClose, children, className = '' }: ModalProps) => {
       const touch = e.touches[0];
       handleDragMove(touch.clientX, touch.clientY);
 
-      // Only prevent default when we actually want to block the scroll
-      // - When dragging the pill
-      // - When fullscreen and at the top and dragging down
-      // - When not fullscreen and dragging vertically (to bring it to fullscreen)
       const pillElement = modalElement.querySelector(`.${styles.pill}`);
       const touchTarget = document.elementFromPoint(touch.clientX, touch.clientY);
       const isPillDrag = pillElement && pillElement.contains(touchTarget as Node);
       const isDraggingDown = touch.clientY > dragStart;
-      const isVerticalDrag = Math.abs(touch.clientY - dragStart) > Math.abs(touch.clientX - dragStart);
 
       // Prevent default for vertical drag events when modal is not in fullscreen mode
       // or when pill is being dragged, or when at top and dragging down in fullscreen
-      if (isPillDrag || (isFullscreen && isAtTop && isDraggingDown) || (!isFullscreen && isVerticalDrag)) {
+      if (isPillDrag || (isFullscreen && isDraggingDown) || (!isFullscreen)) {
         e.preventDefault();
       }
     };
