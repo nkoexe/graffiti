@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   title: "Graffiti",
   description: "Community-driven Graffiti Database",
   icons: {
-    icon: '/icon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+      { url: '/icon.png', sizes: '256x256', type: 'image/png' },
+    ],
+    apple: '/icon.png',
   },
 };
 
