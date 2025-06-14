@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState, useEffect } from "react";
 import 'reactjs-popup/dist/index.css';
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 import Modal from "./components/Modal/Modal";
 import styles from "./page.module.css";
@@ -23,10 +23,14 @@ export default function Home() {
   const { graffitiData, refreshData, removeGraffiti, addGraffiti } = useGraffiti();
   const [openModal, setOpenModal] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
-  const [selectedElement, setSelectedElement] = useState<GraffitiData | null>(null);  const [mapCenter, setMapCenter] = useState<[number, number]>([46.6707291, 11.1591838]);
+  const [selectedElement, setSelectedElement] = useState<GraffitiData | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([46.6707291, 11.1591838]);
   const [locationStatus, setLocationStatus] = useState<'requesting' | 'granted' | 'denied' | 'unavailable' | 'timeout'>('requesting');
   const [longPressCoordinates, setLongPressCoordinates] = useState<[number, number] | null>(null);
   const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Get user's current location
   const getUserLocation = () => {
@@ -41,7 +45,8 @@ export default function Home() {
       enableHighAccuracy: true,
       timeout: 10000, // 10 second timeout
       maximumAge: 300000 // 5 minutes cache
-    };    navigator.geolocation.getCurrentPosition(
+    };
+    navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         console.log('User location obtained:', latitude, longitude);
@@ -98,12 +103,86 @@ export default function Home() {
 
     return watchId;
   };
+
+  // Detect if we're on desktop
+  useEffect(() => {
+    const checkIfDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    checkIfDesktop();
+    window.addEventListener('resize', checkIfDesktop);
+
+    return () => {
+      window.removeEventListener('resize', checkIfDesktop);
+    };
+  }, []);
+
+  // Gallery state management
+  useEffect(() => {
+    const updateGalleryState = () => {
+      const container = document.querySelector('.image-gallery-container') as HTMLElement;
+      if (!container || !selectedElement || !openModal) {
+        setCanScrollLeft(false);
+        setCanScrollRight(false);
+        return;
+      }
+
+      const scrollLeft = container.scrollLeft;
+      const maxScroll = container.scrollWidth - container.clientWidth;
+
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < maxScroll);
+    };
+
+    if (openModal && selectedElement) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      // Initial check after modal renders
+      // allow some time for images to load
+      // todo find a better way to handle this
+      const timer = setTimeout(updateGalleryState, 1000);
+
+      // Update on window resize
+      window.addEventListener('resize', updateGalleryState);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', updateGalleryState);
+      };
+    }
+  }, [openModal, selectedElement]);
+
+  // Gallery navigation functions
+  const scrollToImage = (direction: 'left' | 'right') => {
+    const container = document.querySelector('.image-gallery-container') as HTMLElement;
+    if (!container) return;
+
+    const scrollAmount = direction === 'left' ? -250 : 250;
+
+    container.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleGalleryScroll = () => {
+    const container = document.querySelector('.image-gallery-container') as HTMLElement;
+    if (!container) return;
+
+    const scrollLeft = container.scrollLeft;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < maxScroll);
+  };
+
   useEffect(() => {
     getUserLocation();
-    
+
     // Start watching position after component mounts
     let watchId: number | undefined;
-    
+
     const startWatching = () => {
       if (navigator.geolocation && locationStatus === 'granted') {
         watchId = watchUserPosition();
@@ -125,7 +204,7 @@ export default function Home() {
   // Separate effect to handle starting position watching when permission is granted
   useEffect(() => {
     let watchId: number | undefined;
-    
+
     if (locationStatus === 'granted') {
       watchId = watchUserPosition();
     }
@@ -171,6 +250,7 @@ export default function Home() {
     setSelectedElement(element);
     setOpenModal(true);
   };
+
   // Handle add button click
   const handleAddButtonClick = () => {
     setLongPressCoordinates(null); // Reset coordinates when using button
@@ -217,7 +297,8 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.map}>        <Map
+      <div className={styles.map}>
+        <Map
           data={graffitiData}
           onMarkerClick={handleMarkerClick}
           onAddClick={handleAddButtonClick}
@@ -225,7 +306,9 @@ export default function Home() {
           center={mapCenter}
           userPosition={userPosition}
         />
-      </div>{selectedElement && (
+      </div>
+
+      {selectedElement && (
         <Modal open={openModal} onClose={() => setOpenModal(false)}>
           <div>
             <div style={{ marginBottom: "10px", fontSize: "0.9rem", color: "#666" }}>
@@ -239,38 +322,86 @@ export default function Home() {
                 })}
               </p>
             </div>
+
             <h3 className={modalStyles.title}>Graffiti by: {selectedElement.author}</h3>
-            <div
-              style={{
-                display: "flex",
-                overflowX: "auto",
-                gap: "10px",
-                padding: "5px 0",
-                marginBottom: "15px",
-                WebkitOverflowScrolling: "touch",
-                scrollbarWidth: "none",
-              }}
-            >
-              {selectedElement.images.map((image, index) => (
-                <div
-                  key={index}
-                  style={{
-                    flexShrink: 0,
-                  }}
-                >
-                  <img
-                    src={image}
-                    alt={`Graffiti image ${index + 1} by ${selectedElement.author}`}
+
+            <div style={{ position: 'relative' }}>
+              <div
+                className={`image-gallery-container ${styles.imageGalleryContainer}`}
+                style={{
+                  display: "flex",
+                  overflowX: "auto",
+                  gap: "10px",
+                  margin: "5px 0",
+                  marginBottom: "15px",
+                  borderRadius: "20px",
+                  WebkitOverflowScrolling: "touch",
+                  scrollbarWidth: "none",
+                  scrollBehavior: "smooth",
+                }}
+                onScroll={handleGalleryScroll}
+              >
+                {selectedElement.images.map((image, index) => (
+                  <div
+                    key={index}
                     style={{
                       height: "200px",
-                      width: "auto",
-                      objectFit: "cover",
-                      borderRadius: "8px",
+                      flexShrink: 0,
                     }}
-                  />
-                </div>
-              ))}
+                  >
+                    <img
+                      src={image}
+                      alt={`Graffiti image ${index + 1} by ${selectedElement.author}`}
+                      style={{
+                        height: "200px",
+                        width: "auto",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {isDesktop && (
+                <>
+                  <button
+                    onClick={() => scrollToImage('left')}
+                    disabled={!canScrollLeft}
+                    className={styles.galleryNavButton}
+                    style={{
+                      position: 'absolute',
+                      left: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      opacity: canScrollLeft ? 1 : 0,
+                      pointerEvents: canScrollLeft ? 'auto' : 'none'
+                    }}
+                    aria-label="Previous image"
+                  >
+                    <FaChevronLeft />
+                  </button>
+
+                  <button
+                    onClick={() => scrollToImage('right')}
+                    disabled={!canScrollRight}
+                    className={styles.galleryNavButton}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      opacity: canScrollRight ? 1 : 0,
+                      pointerEvents: canScrollRight ? 'auto' : 'none'
+                    }}
+                    aria-label="Next image"
+                  >
+                    <FaChevronRight />
+                  </button>
+                </>
+              )}
             </div>
+
             <p className={modalStyles.description}>{selectedElement.description}</p>
             <div className={styles.controlBar}>
               <button
@@ -283,6 +414,7 @@ export default function Home() {
           </div>
         </Modal>
       )}
+
       <AddContentModal
         open={openAddModal}
         onClose={handleAddModalClose}

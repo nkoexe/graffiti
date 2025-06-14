@@ -73,8 +73,7 @@ const Map = (props: MapProps) => {
     );
   });
 
-  // Get suggestions (first 5 filtered results)
-  const suggestions = searchQuery.trim() ? filteredData.slice(0, 5) : [];
+  const suggestions = searchQuery.trim() ? filteredData.slice(0, 10) : [];
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -222,10 +221,10 @@ const Map = (props: MapProps) => {
         }
         )}
 
-        {/* User position indicator */}
         {userPosition && (
           <Marker
             position={userPosition}
+            keyboard={false}
             icon={new DivIcon({
               className: '',
               iconSize: [15, 15],
