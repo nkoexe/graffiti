@@ -108,7 +108,7 @@ const Map = (props: MapProps) => {
           <input
             type="text"
             placeholder="Search"
-            className={styles.searchBar}
+            className={`${styles.baseControl} ${styles.searchBar}`}
             value={searchQuery}
             onChange={handleSearchChange}
             onFocus={handleSearchFocus}
@@ -150,7 +150,7 @@ const Map = (props: MapProps) => {
             </div>
           )}
         </div>
-        <button onClick={onAddClick} className={styles.addButton}>
+        <button onClick={onAddClick} className={`${styles.baseControl} ${styles.addButton}`}>
           <FaPlus className={styles.plusIcon} />
           <span className={styles.addButtonText}>Add New</span>
         </button>

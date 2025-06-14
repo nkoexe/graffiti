@@ -1,31 +1,13 @@
 .toggleButton {
   padding: 10px;
-  background-color: var(--button-bg);
-  color: var(--button-text);
-  border: 1px solid var(--button-border);
+  aspect-ratio: 1;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 14px;
-  box-shadow: var(--button-shadow);
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
   position: relative;
   overflow: hidden;
-}
-
-.toggleButton:hover {
-  background-color: var(--button-bg-hover);
-  box-shadow: var(--button-shadow-hover);
-  transform: translateY(-1px);
-}
-
-.toggleButton:active {
-  transform: translateY(0);
-  box-shadow: var(--button-shadow-active);
 }
 
 .iconContainer {
@@ -45,7 +27,6 @@
   transition: all 0.3s ease;
 }
 
-/* Animation for icon change */
 .toggleButton .icon {
   animation: iconBounce 0.4s ease;
 }
@@ -55,44 +36,19 @@
     transform: scale(0.8) rotate(-10deg);
     opacity: 0.8;
   }
+
   50% {
     transform: scale(1.1) rotate(5deg);
   }
+
   100% {
     transform: scale(1) rotate(0deg);
     opacity: 1;
   }
 }
 
-/* Mobile optimizations */
 @media (max-width: 768px) {
-  .toggleButton {
-    width: 42px;
-    height: 42px;
-    padding: 8px;
-  }
-  
   .icon {
     font-size: 14px;
-  }
-}
-
-/* Focus styles for accessibility */
-.toggleButton:focus {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 2px;
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .toggleButton,
-  .iconContainer,
-  .icon {
-    transition: none;
-    animation: none;
-  }
-  
-  .toggleButton:hover .iconContainer {
-    transform: none;
   }
 }
