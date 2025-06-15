@@ -54,7 +54,7 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ open, onClose, onGraf
   const MAX_DESCRIPTION_LENGTH = 500;
   const MAX_AUTHOR_LENGTH = 100;
   const MAX_IMAGES = 10;
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_FILE_SIZE = 15 * 1024 * 1024; // 5MB
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
   // Validation functions
